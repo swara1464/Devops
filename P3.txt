@@ -1,0 +1,119 @@
+#Install Jenkins Properly (Use EXACT Commands)
+sudo apt update
+sudo apt install ca-certificates curl gnupg -y
+
+curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | \
+sudo tee /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+https://pkg.jenkins.io/debian-stable binary/" | \
+sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+sudo apt update
+sudo apt install jenkins -y
+
+#Start Jenkins & Open in Browser
+
+Visit:
+http://localhost:8080
+
+#Get the initial admin password:
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+Paste, Login, Install Suggested Plugins.
+
+#Alternative Jenkins Installation (If Above Fails)
+sudo apt update
+sudo apt install openjdk-11-jdk -y
+
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | \
+sudo apt-key add -
+
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+/etc/apt/sources.list.d/jenkins.list'
+
+sudo apt update
+sudo apt install jenkins -y
+
+#UNINSTALL / RESET EVERYTHING IF JENKINS BREAKS
+1. STOP Jenkins
+sudo systemctl stop jenkins
+
+2. Remove Jenkins completely
+sudo apt remove jenkins -y
+sudo apt purge jenkins -y
+
+3. Delete configs & leftovers
+sudo rm -rf /var/lib/jenkins
+sudo rm -rf /var/cache/jenkins
+sudo rm /etc/apt/sources.list.d/jenkins.list
+sudo rm /usr/share/keyrings/jenkins-keyring.asc
+
+4. Reinstall (use Step 1 again)
+🌐 PART D — Important: GitHub Webhook Using Local IP
+
+GitHub cannot send to localhost, but it can send to your machine’s LAN IP.
+
+Step A — Find your IP
+hostname -I
+Example:
+10.12.33.45
+
+Step B — Use this as webhook URL:
+http://10.12.33.45:8080/github-webhook/
+
+🏗️ PART E — Create Jenkins Freestyle Job (Main Program Task)
+1. Jenkins → New Item → Freestyle Project
+Name: student-portal-site
+
+2. Source Code Management → Git
+Repository URL:
+https://github.com/YOUR_USERNAME/student-portal.git
+Add credentials if needed.
+
+3. Build Triggers
+✔ GitHub hook trigger for GITScm polling
+
+4. Build Step → Execute Shell
+echo "Building student-portal"
+ls -la
+echo "Contents of index.html:"
+sed -n '1,80p' index.html
+
+Save.
+
+#Configure GitHub Webhook
+GitHub → Repo → Settings → Webhooks → Add Webhook
+
+Payload URL:
+http://<YOUR_IP>:8080/github-webhook/
+Content type: application/json
+Event: Just the push event
+Save
+
+#Make a Small Update & Push
+# create branch
+git checkout -b tiny-update
+
+# update HTML (CI test)
+sed -i "s/Event Registration/Event Registration - Updated/" index.html
+
+git add index.html
+git commit -m "Tiny update: change heading for CI test"
+git push -u origin tiny-update
+
+# merge
+git checkout main
+git merge tiny-update
+git push origin main
+
+#Expected Jenkins Output (In Console)
+Building student-portal
+total 8
+-rw-r--r-- 1 jenkins jenkins 234 Nov 26 10:00 index.html
+Contents of index.html:
+<!doctype html>
+...
+<h1>Event Registration - Updated</h1>
+...
+Finished: SUCCESS
