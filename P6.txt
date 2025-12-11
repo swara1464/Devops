@@ -1,0 +1,102 @@
+1. Install Docker on Ubuntu (exact exam commands)
+sudo apt remove docker docker-engine docker.io containerd runc
+
+sudo apt update
+sudo apt install ca-certificates curl gnupg -y
+
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+| sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+
+#Add the Docker repo:
+echo \
+"deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu \
+$(. /etc/os-release && echo $VERSION_CODENAME) stable" \
+| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+
+#Install Docker Engine:
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io \
+docker-buildx-plugin docker-compose-plugin -y
+
+#Add user to docker group:
+sudo usermod -aG docker $USER
+
+2. Install kubectl
+
+#Download latest:
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+
+#Make executable & move:
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
+
+
+#Verify:
+kubectl version --client
+
+3. Install Minikube
+
+#Download:
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+#Install:
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+4. Start Minikube (using Docker as the driver)
+minikube start --driver=docker
+
+5. Create deployment.yaml (Kubernetes Deployment file)
+Create file:
+nano deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-portal-deploy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: student-portal
+  template:
+    metadata:
+      labels:
+        app: student-portal
+    spec:
+      containers:
+      - name: student-portal
+        image: YOUR_DOCKER_REGISTRY/student-portal:v1
+        ports:
+        - containerPort: 5000
+
+6. Make the Docker image available to Minikube
+minikube image load student-portal:v1
+
+7. Apply the Deployment
+kubectl apply -f deployment.yaml
+
+8. Verify Deployment Created
+kubectl get deployments
+
+Example output:
+NAME                    READY   UP-TO-DATE   AVAILABLE   AGE
+student-portal-deploy   1/1     1            1           10s
+
+9. Verify Pod is Running
+kubectl get pods -l app=student-portal
+
+Example:
+NAME                                         READY   STATUS    RESTARTS   AGE
+student-portal-deploy-66b8c6f5f9-abcde       1/1     Running   0          20s
+
+10. Check Logs
+kubectl logs student-portal-deploy-66b8c6f5f9-abcde
+
+Expected:
+ * Running on http://0.0.0.0:5000/
