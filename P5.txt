@@ -1,0 +1,17 @@
+#List running containers
+docker ps
+
+#List all containers
+docker ps -a
+
+#List images
+docker images
+
+#Stop a running container
+docker stop student-portal
+
+#Remove a container
+docker rm student-portal
+
+#Remove an image
+docker rmi student-portal:v1
