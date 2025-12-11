@@ -1,29 +1,70 @@
-# Kubernetes Deployment Steps
+# Student Portal Kubernetes Deployment
 
-This guide outlines the steps to deploy a Docker image on Kubernetes using a Deployment YAML file and verify that the pod is running.
+This repository contains the necessary Kubernetes configuration files to deploy the **Student Portal** application (or a placeholder `nginx` service) to a Kubernetes cluster.
 
-## Step 1: Create the Deployment Manifest
+## Prerequisites
 
-The deployment configuration is stored in the file below. Open it to modify the image name or other settings if necessary.
+Before running the code, ensure you have the following installed and set up on your machine:
 
-**File Location:** [deployment.yaml](./deployment.yaml)
+1.  **Kubernetes Cluster**:
+    *   You can use **Minikube**, **Docker Desktop (Kubernetes enabled)**, of a cloud provider (GKE, EKS, AKS).
+    *   Ensure your cluster is running: `kubectl cluster-info`
 
-> **Note:** 
-> - If you are using a local image with Minikube, make sure to load it into the cluster: `minikube image load student-portal:v1`.
-> - If using a remote registry, ensure `YOUR_DOCKER_REGISTRY` in the `deployment.yaml` file is replaced with your actual Docker Hub username or registry URL.
+2.  **kubectl CLI**:
+    *   Install the Kubernetes command-line tool to interact with your cluster.
+    *   [Installation Guide](https://kubernetes.io/docs/tasks/tools/)
 
-## Step 2: Apply the Deployment
+3.  **Terminal**:
+    *   Use bash, PowerShell, or any standard terminal interface.
 
-Use `kubectl` to apply the configuration defined in your YAML file to the Kubernetes cluster.
+---
+
+## Configuration
+
+The deployment settings are defined in `deployment.yaml`. 
+
+*   **File:** [`deployment.yaml`](./deployment.yaml)
+*   **Default Image:** `nginx:latest` (This is a placeholder. If you have a custom image like `student-portal:v1`, you should update this file).
+*   **Port:** The container is configured to expose port `5000`.
+
+To change the Docker image:
+1.  Open `deployment.yaml`.
+2.  Locate the line `image: nginx:latest`.
+3.  Replace `nginx:latest` with your specific image name (e.g., `your-docker-username/student-portal:v1`).
+
+---
+
+## Installation Steps
+
+Follow these steps to deploy the application:
+
+### 1. Navigate to the Directory
+Open your terminal and navigate to the folder containing these files:
+```bash
+cd d:/CLi/Devops/Q6
+```
+*(Adjust the path if you are on a different operating system or location)*
+
+### 2. Apply the Deployment
+Run the following command to create the deployment in your cluster:
 
 ```bash
 kubectl apply -f deployment.yaml
 ```
 
-## Step 3: Verify the Deployment and Pod Status
+**Expected Output:**
+```text
+deployment.apps/student-portal-deploy created
+```
+
+---
+
+## Usage & Verification
+
+Once deployed, verify that everything is running correctly.
 
 ### 1. Check Deployment Status
-Verify that the deployment was created successfully and the pods are available.
+Ensure the deployment controller has accepted the configuration:
 
 ```bash
 kubectl get deployments
@@ -36,7 +77,7 @@ student-portal-deploy   1/1     1            1           10s
 ```
 
 ### 2. Check Pod Status
-Verify that the specific pods managed by the deployment are running.
+Verify that the pods are up and status is `Running`:
 
 ```bash
 kubectl get pods -l app=student-portal
@@ -45,15 +86,22 @@ kubectl get pods -l app=student-portal
 **Expected Output:**
 ```text
 NAME                                     READY   STATUS    RESTARTS   AGE
-student-portal-deploy-66b8c6f5f9-abcde   1/1     Running   0          20s
+student-portal-deploy-66b8c6f5f9-abcde   1/1     Running   0          25s
 ```
 
-### 3. Check Application Logs
-To ensure the application inside the container started correctly (e.g., Flask server running), check the logs of the pod.
+### 3. Check Logs (Optional)
+If you need to troubleshoot, view the logs of your pod. First, get the pod name from the previous step, then run:
 
 ```bash
 kubectl logs <pod-name>
 ```
-*(Replace `<pod-name>` with the actual name from the previous command)*
 
-**Expected Result:** You should see startup logs like `Running on http://0.0.0.0:5000/`.
+---
+
+## Cleanup (Uninstallation)
+
+To remove the deployment and all associated resources from your cluster, run:
+
+```bash
+kubectl delete -f deployment.yaml
+```
