@@ -1,0 +1,66 @@
+1. Create the NodePort Service file
+
+nano service-nodeport.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: student-portal-nodeport
+spec:
+  type: NodePort
+  selector:
+    app: student-portal
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      nodePort: 30080   # optional; can omit
+
+
+2. Apply the Service
+kubectl apply -f service-nodeport.yaml
+
+
+Check service:
+kubectl get svc student-portal-nodeport
+
+Expected:
+NAME                      TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)           AGE
+student-portal-nodeport   NodePort   10.96.x.y      <none>        5000:30080/TCP    10s
+
+3. Get the Node / Minikube IP
+
+For Minikube:
+minikube ip
+Example output:
+192.168.49.2
+
+If not Minikube:=
+kubectl get nodes -o wide
+Use the INTERNAL-IP.
+
+4. Access the Flask App via NodePort
+curl http://192.168.49.2:30080 | head -n 10
+
+You should see:
+
+<!doctype html>
+<html>
+<body>
+<h1>Student Portal</h1>
+...
+
+5. Scale Deployment to 3 Replicas
+kubectl scale deployment student-portal-deploy --replicas=3
+
+Check:
+kubectl get pods -l app=student-portal
+
+Expected:
+NAME                                         READY   STATUS    RESTARTS   AGE
+student-portal-deploy-66b8c6f5f9-abcde       1/1     Running   0          1m
+student-portal-deploy-66b8c6f5f9-bghij       1/1     Running   0          10s
+student-portal-deploy-66b8c6f5f9-klmno       1/1     Running   0          10s
+
+6. Re-test NodePort (optional)
+curl http://192.168.49.2:30080
