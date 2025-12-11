@@ -1,0 +1,49 @@
+#Create & Switch to New Branch
+git checkout -b update-form
+
+#Modify index.html
+<label>Department: <input type="text" name="department" required></label><br>
+
+#Stage & Commit Changes
+git add index.html
+git commit -m "Add Department field to registration form"
+
+#Switch Back to Main
+git checkout main
+
+#Merge Branch into Main
+git merge update-form
+
+#Push Updated Main to GitHub
+git push origin main
+
+#Optional: Delete Branch (Local + Remote)
+git branch -d update-form
+git push origin --delete update-form
+
+#Expected Git Outputs (Exam Examples)
+$ git checkout -b update-form
+Switched to a new branch 'update-form'
+
+$ git commit -m "Add Department field to registration form"
+[update-form 6d7e4c1] Add Department field to registration form
+1 file changed, 3 insertions(+)
+
+$ git checkout main
+Switched to branch 'main'
+
+$ git merge update-form
+Updating ab3c9f2..6d7e4c1
+Fast-forward
+index.html | 3 ++-
+1 file changed, 2 insertions(+), 1 deletion(-)
+
+$ git push origin main
+To github.com:YOUR_USERNAME/student-portal.git
+ab3c9f2..6d7e4c1 main -> main
+
+$ git branch -d update-form
+Deleted branch update-form (was 6d7e4c1).
+
+#Verification (Check Updated HTML)
+git show HEAD:index.html | sed -n '1,120p'
