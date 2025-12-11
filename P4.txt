@@ -1,0 +1,119 @@
+PART A — Install REAL Docker (Correct APT Method)
+#Install Docker Engine
+sudo apt update
+sudo apt install -y \
+    ca-certificates \
+    curl \
+    gnupg
+
+#Add Docker GPG Key:
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+#Add Docker repository:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+#Update:
+sudo apt update
+
+#Install Docker Engine:
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+#Enable & Start Docker
+sudo systemctl enable docker
+sudo systemctl start docker
+
+#Add User to docker Group both
+sudo usermod -aG docker $USER
+sudo usermod -aG docker Lab703
+
+#Apply Group Change (No Reboot Needed)
+newgrp docker
+
+#Test Docker
+docker ps
+
+#Expected output:
+CONTAINER ID   IMAGE   COMMAND   CREATED   STATUS   PORTS   NAMES
+
+PART B — Files Required for Program (Exam)
+app.py
+from flask import Flask, render_template_string
+app = Flask(__name__)
+HTML = """
+<!doctype html>
+<html><body>
+<h1>Student Portal</h1>
+<p>Registration form:</p>
+<form>
+Name: <input name="name"><br>
+Email: <input name="email"><br>
+Phone: <input name="phone"><br>
+Department: <input name="department"><br>
+</form>
+</body></html>
+"""
+@app.route("/")
+def home():
+    return render_template_string(HTML)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)
+
+requirements.txt
+Flask==2.3.2
+
+Dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY app.py .
+EXPOSE 5000
+CMD ["python", "app.py"]
+
+#Build & Run (Commands + Expected Output)
+Build:
+docker build -t student-portal:v1 .
+
+Expected:
+Successfully tagged student-portal:v1
+
+Run:
+docker run -d --name student-portal -p 5000:5000 student-portal:v1
+
+
+Example container ID:
+d9f1c3a2b4e7f6a5c3b2...
+
+Verify:
+curl -s http://localhost:5000 | head -n 10
+
+1. Go to Project Directory
+cd ~/p1/flaskdocker
+
+2. Build Docker Image
+docker build -t student-portal:v1 .
+
+3. Run Container (Port Mapping 5000 → 5000)
+docker run -d --name student-portal -p 5000:5000 student-portal:v1
+
+4. Test Application
+curl -s http://localhost:5000 | head
+
+Expected beginning:
+
+<!doctype html>
+<html><body>
+<h1>Student Portal</h1>
+
+
+Run again if needed:
+
+newgrp docker
+docker ps
