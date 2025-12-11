@@ -1,0 +1,53 @@
+index.html
+
+# create folder & go inside
+mkdir student-portal && cd student-portal
+
+# create index.html
+cat > index.html << 'HTML'
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Event Registration</title>
+</head>
+<body>
+<h1>Event Registration</h1>
+<form id="regForm" action="#" method="post">
+<label>Name: <input type="text" name="name" required></label><br>
+<label>Email: <input type="email" name="email" required></label><br>
+<label>Phone: <input type="tel" name="phone" required></label><br>
+<button type="submit">Register</button>
+</form>
+</body>
+</html>
+HTML
+
+git init
+
+git config user.name "Your Name"
+git config user.email "you@example.com"
+
+git add index.html
+git commit -m "Initial commit: add registration form"
+
+git remote add origin git@github.com:YOUR_USERNAME/student-portal.git
+git branch -M main
+git push -u origin main
+
+#Check commits
+git log --oneline
+
+#Check remote
+git remote -v
+
+origin  git@github.com:YOUR_USERNAME/student-portal.git (fetch)
+origin  git@github.com:YOUR_USERNAME/student-portal.git (push)
+
+#If Git Installation Breaks / Errors → Remove Everything & Reinstall
+Remove all Git configs (local project)
+rm -rf .git
+
+#Remove global Git config (only if corrupted)
+rm ~/.gitconfig
