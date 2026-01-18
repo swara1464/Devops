@@ -1,109 +1,65 @@
-# Q8: ML Environment Setup
+# Lab Question 8: MLflow Experiment Tracking
 
-This guide details how to set up a simple Machine Learning project environment, including creating a virtual environment, installing dependencies, and verifying the setup with a Jupyter Notebook.
+## 📝 Problem Statement
+**Perform experiment tracking using MLflow by training a machine learning model, logging metrics, parameters, and artifacts, and comparing multiple runs to identify the best-performing model.**
 
-## Files
-- `requirements.txt`: List of Python dependencies.
-- `ml_setup.ipynb`: Jupyter Notebook to verify environment and run a simple model.
+---
 
-## Setup Instructions (For Developer)
+## ✅ Solution Steps
 
-### 1. Prerequisites
-- Python 3.x installed.
-- Git installed.
+Follow these steps to set up experiment tracking.
 
-### 2. Create and Activate Virtual Environment
-
-Run the following commands in your terminal:
-
-**Windows (PowerShell):**
-```powershell
-python -m venv venv
-.\venv\Scripts\Activate
-```
-
-**Linux/macOS:**
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-Install the required packages from `requirements.txt`:
+### Step 1: Install Dependencies
+Open your terminal in this directory (`Q8`) and install the necessary packages.
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Verify the installation:
+### Step 2: Understand the Training Script
+We have provided a script `train.py` that trains an ElasticNet model on the Wine Quality dataset. It uses MLflow to:
+1.  **Log Parameters**: `alpha` and `l1_ratio`.
+2.  **Log Metrics**: RMSE, MAE, and R2 score.
+3.  **Log Model**: Saves the trained model as an artifact.
+
+**File:** [`train.py`](train.py)
+
+### Step 3: Run Experiments
+Run the training script multiple times with different parameters to simulate different experiments.
+
+**Experiment 1 (Default parameters):**
+```bash
+python train.py 0.5 0.5
+```
+
+**Experiment 2 (Different alpha):**
+```bash
+python train.py 0.2 0.5
+```
+
+**Experiment 3 (Different l1_ratio):**
+```bash
+python train.py 0.5 0.8
+```
+
+### Step 4: Compare Runs in MLflow UI
+Launch the MLflow User Interface to visualize and compare the runs.
+
+1.  **Start UI:**
+    ```bash
+    mlflow ui
+    ```
+2.  **Access in Browser:** Open [http://localhost:5000](http://localhost:5000).
+3.  **Analyze:**
+    *   Click on the Experiment name (usually "Default").
+    *   You will see a table listing your 3 runs.
+    *   Compare the `rmse` and `r2` columns to identify the best model (lowest RMSE, highest R2).
+    *   Click on a specific run to view detailed parameters and the logged model artifact.
+
+### Step 5: Git Versioning
+Don't forget to track your code changes.
 
 ```bash
-pip freeze | grep -E "numpy|pandas|scikit-learn|jupyter"
-# Or on Windows PowerShell:
-# pip freeze | Select-String -Pattern "numpy","pandas","scikit-learn","jupyter"
+git add train.py requirements.txt
+git commit -m "Add MLflow training script for experiment tracking"
 ```
-
-### 4. Run the Jupyter Notebook
-
-Launch Jupyter Lab to run the verification notebook:
-
-```bash
-jupyter lab
-```
-
-1. Open `ml_setup.ipynb` in the Jupyter interface.
-2. Run All Cells.
-3. Confirm the output matches the expected versions and model coefficients.
-
-**Expected Output:**
-```
-numpy: 1.26.2
-pandas: 2.2.2
-coef: [2.] intercept: 0.0
-```
-
-### 5. Commit to Git
-
-After verifying the environment, commit the files to the repository:
-
-```bash
-git add requirements.txt ml_setup.ipynb
-git commit -m "Add ML environment requirements and verification notebook"
-git push origin main
-```
-
----
-
-## Instructions for External Users
-
-If you are a new user or collaborator cloning this repository, follow these steps to get the environment running:
-
-1.  **Clone the Repository:**
-    ```bash
-    git clone <repository-url>
-    cd <repository-directory>/Q8
-    ```
-
-2.  **Set Up the Environment:**
-    It is recommended to use a virtual environment to avoid conflicts.
-    ```bash
-    # Windows
-    python -m venv venv
-    .\venv\Scripts\Activate
-
-    # Linux/Mac
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
-
-3.  **Install Dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4.  **Run the Notebook:**
-    ```bash
-    jupyter lab ml_setup.ipynb
-    ```
-    Execute the cells to verify the installation and see the model in action.

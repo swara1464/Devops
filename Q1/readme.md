@@ -19,8 +19,9 @@ cd event-registration
 # Create the file index.html
 ```
 
-**Project File:**
-[regestration.html](regestration.html)
+**Project Files:**
+- [regestration.html](regestration.html): The initial registration form **without** the Department field.
+- [updated-form.html](updated-form.html): The updated registration form **with** the Department field.
 
 ### Step 2: Initialize Git Repository
 Initialize a local Git repository in your project folder.
@@ -51,4 +52,50 @@ git branch -M main
 
 # 4. Push the code
 git push -u origin main
+```
+
+### Step 5: Create and Switch to a New Branch
+Create a new branch named `update-form` to work on the new feature (adding the Department field).
+
+```bash
+# Create and switch to the new branch
+git branch update-form
+git checkout update-form
+
+# Alternatively, you can do both in one command:
+# git checkout -b update-form
+```
+
+### Step 6: Modify the Registration Form
+Open `regestration.html` and add the new "Department" field.
+
+1.  **Add HTML Input:** Add a new input field for "Department" after the phone number field.
+2.  **Update JavaScript:** Add validation logic for the new field and ensure it's included in the form submission.
+
+*(Use the code from `updated-form.html` in this folder as the improved version with the Department field)*
+
+### Step 7: Commit Changes to the Branch
+Stage and commit your changes to the `update-form` branch.
+
+```bash
+git add regestration.html
+git commit -m "Add Department field to registration form"
+```
+
+### Step 8: Merge Branch into Main
+Switch back to the `main` branch and merge the changes from `update-form`.
+
+```bash
+# Switch back to main
+git checkout main
+
+# Merge the update-form branch
+git merge update-form
+```
+
+### Step 9: Push Changes to GitHub
+Push the updated `main` branch to the remote repository.
+
+```bash
+git push origin main
 ```

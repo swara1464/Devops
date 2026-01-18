@@ -1,143 +1,85 @@
-# Expose & Scale Application (NodePort)
+# Lab Question 7: Data Versioning with DVC
 
-This guide details how to expose your running Kubernetes deployment to the outside world (or local network) using a **NodePort Service** and how to scale the application to handle more load.
-
-## Prerequisites
-
-Before proceeding, ensure that:
-1.  **Kubernetes Cluster** is running (`kubectl cluster-info`).
-2.  **Deployment** from the previous step (Q6) is active.
-    *   Verify with: `kubectl get deployments student-portal-deploy`
-    *   If not, go back to Q6 and apply the deployment first.
+## 📝 Problem Statement
+**Implement data ingestion, cleaning, and versioning using Data Version Control (DVC) by tracking raw and processed datasets, creating a reproducible pipeline with `dvc.yaml`, and validating reproducibility via `dvc repro`.**
 
 ---
 
-## Configuration
+## ✅ Solution Steps
 
-The service configuration is defined in `service-nodeport.yaml`.
+Follow these steps to set up DVC and run the data pipeline.
 
-*   **File:** [`service-nodeport.yaml`](./service-nodeport.yaml)
-*   **Type:** `NodePort`
-*   **Target Port:** `5000` (Container port)
-*   **Node Port:** `30080` (External access port)
-
----
-
-## Step 1: Expose the Application
-
-Apply the service configuration to create the NodePort service.
-
-### 1. Navigate to the Directory
+### Prerequisites
+Ensure you have DVC and pandas installed:
 ```bash
-cd d:/CLi/Devops/Q7
+pip install dvc pandas
 ```
 
-### 2. Apply the Service
+### Step 1: Initialize the Project
+Initialize Git and DVC in the `Q7` directory.
+
 ```bash
-kubectl apply -f service-nodeport.yaml
+# Initialize Git (if not already done)
+git init
+
+# Initialize DVC
+dvc init
+
+# Commit the DVC setup
+git add .
+git commit -m "Initialize DVC"
+```
+
+### Step 2: Track Data
+We have created a sample raw dataset in `data/raw/data.csv`. We will track this file using Git (for small files) or DVC (for large files). For this exercise, we'll let DVC manage the pipeline dependencies.
+
+**Project Structure:**
+*   `data/raw/data.csv`: The input data.
+*   `src/clean.py`: The script to clean the data.
+*   `dvc.yaml`: The pipeline configuration file.
+
+### Step 3: Define the Pipeline
+We have created a `dvc.yaml` file that defines the cleaning stage.
+
+**File:** [`dvc.yaml`](dvc.yaml)
+```yaml
+stages:
+  clean_data:
+    cmd: python src/clean.py
+    deps:
+      - data/raw/data.csv
+      - src/clean.py
+    outs:
+      - data/processed/cleaned_data.csv
+```
+This tells DVC:
+*   **cmd**: Run `python src/clean.py`.
+*   **deps**: Depends on `data/raw/data.csv` and the script itself.
+*   **outs**: Produces `data/processed/cleaned_data.csv`.
+
+### Step 4: Run the Pipeline (Reproduce)
+Run the pipeline using `dvc repro`. This command checks dependency hashes. If nothing has changed, it won't run. If data or code changes, it re-runs the stage.
+
+```bash
+dvc repro
 ```
 
 **Expected Output:**
-```text
-service/student-portal-nodeport created
-```
+DVC will run the clean command, output "Cleaner data...", and generate `data/processed/cleaned_data.csv`.
 
----
+### Step 5: Versioning and Tracking Changes
 
-## Step 2: Access the Application
-
-Once the service is created, you can access the application using the Node's IP address and the defined port (`30080`).
-
-### 1. Find the URL
-
-*   **If using Minikube:**
-    Run the following command to get the exact URL instantly:
+1.  **Commit the DVC lock file:** DVC creates a `dvc.lock` file which captures the exact state (hashes) of your dependencies and outputs.
     ```bash
-    minikube service student-portal-nodeport --url
+    git add dvc.yaml dvc.lock src/clean.py data/raw/data.csv
+    git commit -m "Run data cleaning pipeline"
     ```
 
-*   **If using Docker Desktop / Standard K8s:**
-    Use `localhost` (if port forwarding is auto-managed) or the Node IP.
-    ```bash
-    http://localhost:30080
-    ```
-    OR
-    ```bash
-    # Get Node IP
-    kubectl get nodes -o wide
-    # Access via <NODE-IP>:30080
-    ```
+2.  **Modify Data and Reproduce:**
+    *   Edit `data/raw/data.csv` (e.g., add a new row).
+    *   Run `dvc repro` again.
+    *   Notice that DVC detects the change and re-runs the `clean_data` stage.
 
-### 2. Test Accessibility
-You can test the connection using `curl` or your browser:
-
-```bash
-curl http://<YOUR-NODE-IP>:30080
-```
-
-**Expected Output:**
-You should see the HTML response from your application (e.g., `<!doctype html>...`).
-
----
-
-## Step 3: Scale the Deployment
-
-To handle more traffic, scale the application to 3 replicas.
-
-### 1. Run Scale Command
-```bash
-kubectl scale deployment student-portal-deploy --replicas=3
-```
-
-**Expected Output:**
-```text
-deployment.apps/student-portal-deploy scaled
-```
-
-
-### 2. Verify Scaling
-Check that 3 pods are now running:
-
-```bash
-kubectl get pods -l app=student-portal
-```
-
-**Expected Output:**
-```text
-NAME                                     READY   STATUS    RESTARTS   AGE
-student-portal-deploy-66b8c6f5f9-abcde   1/1     Running   0          5m
-student-portal-deploy-66b8c6f5f9-bghij   1/1     Running   0          10s
-student-portal-deploy-66b8c6f5f9-klmno   1/1     Running   0          10s
-```
-
-### 3. Verify Service Endpoints
-Ensure the service is correctly routing to your pods (endpoints should match your pods' IPs):
-
-```bash
-kubectl get endpoints student-portal-nodeport
-```
-
----
-
-## Troubleshooting
-
-*   **Service External IP is `<pending>`:** This is normal for NodePort/LoadBalancer types in some environments (like Minikube or bare metal). You should access it via the Node IP (or `minikube ip`).
-*   **Connection Refused:**
-    *   Ensure the pods are `Running` (`kubectl get pods`).
-    *   Check if `minikube tunnel` is needed (for LoadBalancer, though usually not for NodePort, but sometimes required on Mac/Windows).
-    *   Verify the firewall allows traffic on port `30080`.
-*   **Pods stuck in `Pending`:** You might not have enough resources (CPU/Memory) in your cluster. Try scaling down to 2 replicas.
-
----
-
-## Cleanup (Uninstallation)
-
-To remove the service and scale back down:
-
-```bash
-# Delete the service
-kubectl delete -f service-nodeport.yaml
-
-# Scale back to 1 replica (optional)
-kubectl scale deployment student-portal-deploy --replicas=1
-```
+3.  **No Changes:**
+    *   Run `dvc repro` immediately after a successful run.
+    *   DVC will say "Stage 'clean_data' is up to date." and do nothing. This proves reproducibility.

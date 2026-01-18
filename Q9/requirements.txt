@@ -1,4 +1,6 @@
-mlflow
 scikit-learn
 pandas
 numpy
+onnx
+skl2onnx
+onnxruntime

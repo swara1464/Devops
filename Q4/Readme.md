@@ -1,110 +1,75 @@
-# Dockerized Flask Application Guide
+# Lab Question 4: Deploying to Kubernetes
 
-This guide details the steps to create, containerize, and run a fast, modern Flask web application using Docker.
-
-## Project Overview
-
-We will build a Student Portal registration application with a modern, responsive UI, containerize it using Docker, and run it with port mapping.
-
-### Directory Structure
-
-```text
-student-portal/
-├── app.py
-├── requirements.txt
-├── Dockerfile
-└── templates/
-    └── index.html
-```
+## 📝 Problem Statement
+**Deploy the previously created Docker image on Kubernetes using a Deployment YAML file. Verify that the pod is running using `kubectl` commands. Expose the application using a NodePort Service, access it using the node’s IP and port, and scale the deployment to 3 replicas using `kubectl scale`.**
 
 ---
 
-## Step 1: Create the Application
+## ✅ Solution Steps
 
-### 1. `app.py`
-This is the main Flask application entry point. We have enhanced it to serve a proper HTML template.
+Follow these steps to deploy and manage your application on Kubernetes.
 
-File: [`app.py`](./app.py)
+### Prerequisites
+*   Ensure you have a Kubernetes cluster running (e.g., Minikube, Docker Desktop).
+*   Ensure the Docker image `student-portal:v1` is available to your cluster.
+    *   *If using Minikube:* Run `minikube image load student-portal:v1`
+    *   *If using Docker Desktop:* It should be available automatically if built locally.
 
-### 2. `templates/index.html`
-Create a folder named `templates` and add `index.html`. This file contains the enhanced UI with modern styling.
-
-File: [`templates/index.html`](./templates/index.html)
-
-### 3. `requirements.txt`
-Specify the dependencies.
-
-File: [`requirements.txt`](./requirements.txt)
-
----
-
-## Step 2: Containerize with Docker
-
-### `Dockerfile`
-Create a `Dockerfile` in the root directory to define the image.
-
-File: [`Dockerfile`](./Dockerfile)
-
----
-
-## Step 3: Build and Run
-
-Open your terminal in the directory containing these files.
-
-### 1. Build the Docker Image
-This command reads the Dockerfile and builds an image named `student-portal` with tag `v1`.
+### Step 1: Create the Deployment
+Use the `deployment.yaml` file to create the pod.
 
 ```bash
-docker build -t student-portal:v1 .
+# Apply the deployment configuration
+kubectl apply -f deployment.yaml
 ```
 
-*Expected Output:*
-```text
-[+] Building 2.5s (10/10) FINISHED
-...
- => writing image sha256:...
- => naming to docker.io/library/student-portal:v1
-```
+**File:** [deployment.yaml](deployment.yaml)
 
-### 2. Run the Container
-Run the container in detached mode (`-d`), mapping host port 5000 to container port 5000.
+### Step 2: Verify the Pod is Running
+Check the status of your deployment and pods.
 
 ```bash
-docker run -d --name student-portal -p 5000:5000 student-portal:v1
+# Get Deployments
+kubectl get deployments
+
+# Get Pods (Wait for status to be 'Running')
+kubectl get pods
 ```
 
-*Expected Output:*
-```text
-a1b2c3d4e5f6... (container ID)
-```
-
-### 3. Stop the Container
-To stop the application, run:
+### Step 3: Expose the Application
+Use the `service.yaml` file to create a NodePort service.
 
 ```bash
-docker stop student-portal
+# Apply the service configuration
+kubectl apply -f service.yaml
 ```
 
----
+**File:** [service.yaml](service.yaml)
 
-## Step 4: Verify
-
-You can verify the application is running by accessing it in your browser or using `curl`.
-
-### Browser
-Open [http://localhost:5000](http://localhost:5000)
-
-### Terminal (Curl)
+**Verify Service:**
 ```bash
-curl -s http://localhost:5000 | head -n 15
+kubectl get services
 ```
 
-*Expected Output (Snippet):*
-```html
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    ...
-    <title>Student Portal</title>
+### Step 4: Access the Application
+Access the application using `NodeIP:NodePort`.
+
+*   **Cluster IP / localhost:** `http://localhost:30007` (if using Docker Desktop)
+*   **Minikube:**
+    ```bash
+    # Get the URL directly
+    minikube service flask-app-service --url
+    ```
+
+### Step 5: Scale the Deployment
+Scale the number of pods from 1 to 3.
+
+```bash
+# Scale to 3 replicas
+kubectl scale deployment flask-app-deployment --replicas=3
+
+# Verify the new pods
+kubectl get pods
 ```
+
+You should now see 3 pods running for your application.

@@ -1,91 +1,54 @@
-# Docker Operations Guide
+# Lab Question 5: ML Environment Setup
 
-This guide details the steps to manage Docker containers and images using the command line.
+## 📝 Problem Statement
+**Set up a simple ML project environment by creating a `requirements.txt` file, installing packages, and verifying environment setup. Document the steps in a Jupyter Notebook and commit it to the Git repository.**
 
-## 1. List Images and Containers
+---
 
-### List Running Containers
-To view currently active containers:
+## ✅ Solution Steps
+
+Follow these steps to complete the task.
+
+### Step 1: Create requirements.txt
+Create a file named `requirements.txt` listing the necessary Python packages for a basic ML project.
+
+**File Content:** [`requirements.txt`](requirements.txt)
+```text
+numpy
+pandas
+scikit-learn
+matplotlib
+jupyter
+```
+
+### Step 2: Install Packages
+Open your terminal in this directory (`Q5`) and install the packages using pip.
+
 ```bash
-docker ps
-```
-**Example Output:**
-```
-CONTAINER ID   IMAGE             COMMAND        CREATED         STATUS       PORTS                    NAMES 
-d9f1c3a2b4e7   student-portal:v1 "python app.py"  2 minutes ago   Up 2 mins    0.0.0.0:5000->5000/tcp   student-portal 
+pip install -r requirements.txt
 ```
 
-### List All Containers
-To view all containers, including stopped ones:
+### Step 3: Document and Verify in Jupyter Notebook
+We have provided a Jupyter Notebook that documents these steps and includes a code cell to verify the installation.
+
+1.  **Open the Notebook:**
+    ```bash
+    jupyter notebook setup_guide.ipynb
+    ```
+2.  **Run the Cells:** Execute the cells in the notebook to read the documentation and run the verification script (checking package versions).
+
+**File:** [`setup_guide.ipynb`](setup_guide.ipynb)
+
+### Step 4: Commit to Git
+Once you have created the files and verified the setup, commit everything to your Git repository.
+
 ```bash
-docker ps -a
-```
+# 1. Check status
+git status
 
-### List Images
-To view all available docker images:
-```bash
-docker images
-```
-**Example Output:**
-```
-REPOSITORY        TAG    IMAGE ID    CREATED    SIZE 
-student-portal    v1     a1b2c3d4e5f6 2 hours ago 100MB 
-```
+# 2. Add files
+git add requirements.txt setup_guide.ipynb
 
-## 2. Stop a Running Container
-To stop a container that is currently running (replace `student-portal` with your container name or ID):
-```bash
-docker stop student-portal
+# 3. Commit
+git commit -m "Setup ML project environment and documentation"
 ```
-**Output:**
-```
-student-portal 
-```
-
-## 3. Remove a Container and Image
-
-### Remove a Container
-First, ensure the container is stopped. Then remove it:
-```bash
-docker rm student-portal
-```
-**Output:**
-```
-student-portal 
-```
-
-### Remove an Image
-To remove a specific docker image (replace `student-portal:v1` with your image name and tag):
-```bash
-docker rmi student-portal:v1
-```
-**Example Output:**
-```
-Untagged: student-portal:v1 
-Deleted: sha256:a1b2c3... 
-```
-
-## 4. Setup if No Containers/Images Exist
-If you find no containers or images are available, you can "download" (access) the **Q4 Student Portal** from this git ->https://github.com/Chinmayabs224/DevOps.git project and run it to have a working container environment.
-
-### Steps to Setup Q4 Application
-
-1. **Navigate to the Q4 Directory**
-   Move from the current directory to the Q4 directory:
-   ```bash
-   cd ../Q4
-   ```
-
-2. **Build the Docker Image**
-   Build the image from the Q4 source code:
-   ```bash
-   docker build -t student-portal:v1 .
-   ```
-
-3. **Run the Container**
-   Start the container in detached mode with port mapping:
-   ```bash
-   docker run -d --name student-portal -p 5000:5000 student-portal:v1
-   ```
-
-Now you can proceed with the operations listed in sections 1-3.

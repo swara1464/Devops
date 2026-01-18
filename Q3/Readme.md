@@ -1,119 +1,84 @@
-# Jenkins Freestyle Job: Auto Pull from GitHub & Trigger on Push
+# Lab Question 3: Dockerizing a Web Application
 
-This guide outlines the steps to configure a Jenkins Freestyle Job that automatically pulls changes from GitHub when a push occurs, specifically tracking changes to `Q2/updated-form.html`.
-
-## Prerequisites
-- Jenkins is installed and running.
-- A GitHub repository is set up with the project files (specifically `Q2/updated-form.html`).
-- Jenkins has network access to the GitHub repository.
-
----
-
-### A. Install Jenkins Plugins
-Ensure the following plugins are installed in Jenkins (**Manage Jenkins** → **Plugins** → **Available plugins**):
-1. **Git plugin**
-2. **GitHub plugin** (GitHub Integration / GitHub Hook)
-3. **GitHub Branch Source** (optional, but recommended)
+## 📝 Problem Statement
+**Create a simple web application (HTML or Python Flask). Write a Dockerfile, build a Docker image, and run the container so the application is accessible on a browser using port mapping. Using Docker commands, perform the following operations:**
+*   List images and containers
+*   Stop a running container
+*   Remove a container and image
+*   Demonstrate commands like: `docker ps`, `docker stop`, `docker rm`, `docker rmi`
 
 ---
 
-### B. Create Jenkins Job
+## ✅ Solution Steps
 
-1. **Create New Item**:
-   - Go to **Jenkins UI** → **New Item**.
-   - Enter item name: `updated-form-build`.
-   - Select **Freestyle project**.
-   - Click **OK**.
+Follow these steps to complete the task.
 
-2. **Source Code Management (Git)**:
-   - Scroll to **Source Code Management** and select **Git**.
-   - **Repository URL**: Enter your GitHub repository URL (e.g., `https://github.com/YOUR_USERNAME/devops-repo.git`).
-   - **Credentials**: Add your GitHub credentials (username/password or SSH key) if the repo is private.
-   - **Branch Specifier**: `*/main` (or `*/master` depending on your default branch).
+### Step 1: Create Application Files
+We have created a simple Python Flask application for this task.
+*   `app.py`: The web application code.
+*   `requirements.txt`: Dependencies (Flask).
+*   `Dockerfile`: Instructions to build the image.
 
-3. **Build Triggers**:
-   - Check **GitHub hook trigger for GITScm polling**.
-   - *(Note: This enables Jenkins to listen for the "Push" webhooks from GitHub).*
+### Step 2: Build the Docker Image
+Open your terminal in this directory (`Q3`) and run the build command.
 
-4. **Build Steps**:
-   - Scroll to **Build** section → **Add build step** → **Execute shell**.
-   - Enter the following script to verify the build and display the file content:
-     ```bash
-     echo "Building updated-form project..."
-     ls -la Q2/
-     echo "Contents of Q2/updated-form.html (first 20 lines):"
-     sed -n '1,20p' Q2/updated-form.html
-     ```
-   - Click **Save**.
+```bash
+# syntax: docker build -t <image_name> .
+docker build -t my-flask-app .
+```
+*   `-t my-flask-app`: Tags the image with the name "my-flask-app".
+*   `.`: Specifies the current directory as the build context.
 
----
+### Step 3: Run the Container
+Run the container based on the image you just built, mapping port 5000 of the container to port 5000 on your host machine.
 
-### C. Configure GitHub Webhook
+```bash
+# syntax: docker run -d -p <host_port>:<container_port> --name <container_name> <image_name>
+docker run -d -p 5000:5000 --name flask-container my-flask-app
+```
+*   `-d`: Runs the container in detached mode (background).
+*   `-p 5000:5000`: Maps host port 5000 to container port 5000.
+*   `--name flask-container`: Assigns a specific name to the container.
 
-1. Go to your **GitHub Repository** settings.
-2. Navigate to **Webhooks** → **Add webhook**.
-3. **Payload URL**: `http://<YOUR_JENKINS_IP_OR_DNS>:8080/github-webhook/`
-   - *Ensure you include the trailing slash `/`*.
-4. **Content type**: Select `application/json`.
-5. **Which events would you like to trigger this webhook?**: Select **Just the push event**.
-6. Click **Add webhook**.
+**Verify:** Open your browser and visit `http://localhost:5000`. You should see "Hello from Docker!".
 
----
+### Step 4: Manage Docker Containers and Images
+Now, perform the requested operations using Docker commands.
 
-### D. Verification: Make a Change and Push
+#### 1. List Containers and Images
+Check the running containers and the list of available images.
 
-Perform these steps in your local terminal (Git Bash or VS Code terminal) to trigger the build.
+```bash
+# List running containers
+docker ps
 
-1. **Checkout a new branch**:
-   ```bash
-   git checkout -b update-title
-   ```
+# List all containers (including stopped ones)
+docker ps -a
 
-2. **Modify the HTML file**:
-   Use `sed` to update the title in `Q2/updated-form.html` (or edit manually):
-   ```bash
-   # Update the title tag in the HTML file
-   sed -i 's/Event Registration Form - Updated/Event Registration Form - CI Triggered/' Q2/updated-form.html
-   ```
+# List all local Docker images
+docker images
+```
 
-3. **Stage and Commit**:
-   ```bash
-   git add Q2/updated-form.html
-   git commit -m "Update page title to test Jenkins trigger"
-   ```
+#### 2. Stop the Container
+Stop the running Flask container.
 
-4. **Push to GitHub**:
-   ```bash
-   git push -u origin update-title
-   ```
+```bash
+# syntax: docker stop <container_name_or_id>
+docker stop flask-container
+```
 
-5. **Merge to Main**:
-   ```bash
-   git checkout main
-   git merge update-title
-   git push origin main
-   ```
+#### 3. Remove the Container
+Once stopped, remove the container to free up resources.
 
----
+```bash
+# syntax: docker rm <container_name_or_id>
+docker rm flask-container
+```
 
-### E. Expected Results
+#### 4. Remove the Image
+If you no longer need the application image, you can remove it.
 
-1. **GitHub Side**:
-   - In **Settings** → **Webhooks**, checking the "Recent Deliveries" should show a green checkmark (Status 200) for the push event.
-
-2. **Jenkins Side**:
-   - The job `updated-form-build` should automatically start running shortly after the push.
-   - Click on the build number (e.g., **#1**) → **Console Output**.
-   - You should see output similar to:
-     ```text
-     Building updated-form project...
-     total ...
-     Contents of Q2/updated-form.html (first 20 lines):
-     <!DOCTYPE html>
-     <html lang="en">
-     <head>
-     ...
-     <title>Event Registration Form - CI Triggered</title>
-     ...
-     Finished: SUCCESS
-     ```
+```bash
+# syntax: docker rmi <image_name_or_id>
+docker rmi my-flask-app
+```
